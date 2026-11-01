@@ -1,0 +1,36 @@
+{
+  "produkte": [
+    {
+      "name": "Weihnachtskugeln",
+      "beschreibung": "Weiß oder mit Wintermotiv",
+      "preis": "",
+      "bild": "/images/weihnachtskugeln.jpg",
+      "bild_beschreibung": "Zwei Weihnachtskugeln mit den Wattmusikanten",
+      "etsy_link": ""
+    },
+    {
+      "name": "Button",
+      "beschreibung": "Zum Anstecken",
+      "preis": "",
+      "bild": "/images/button.jpg",
+      "bild_beschreibung": "Button „Die Butjenter Wattmusikanten“ am Strand",
+      "etsy_link": ""
+    },
+    {
+      "name": "Buch",
+      "beschreibung": "Die ganze Geschichte",
+      "preis": "",
+      "bild": "",
+      "bild_beschreibung": "",
+      "etsy_link": ""
+    },
+    {
+      "name": "Kalender",
+      "beschreibung": "Zwölf Monate Watt",
+      "preis": "",
+      "bild": "",
+      "bild_beschreibung": "",
+      "etsy_link": ""
+    }
+  ]
+}

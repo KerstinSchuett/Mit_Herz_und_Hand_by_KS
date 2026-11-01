@@ -1,0 +1,25 @@
+{
+  "handwerke": [
+    {
+      "name": "Gravur",
+      "text": "Mit dem Laser fein in Holz, Schiefer und Edelstahl graviert, vom Namensschild bis zur Wanduhr.",
+      "stichworte": "Holz, Schiefer, Edelstahl",
+      "bild": "/images/wanduhr.jpg",
+      "bild_beschreibung": "Wanduhr aus Holz mit graviertem Frauenporträt"
+    },
+    {
+      "name": "Stickerei",
+      "text": "Von der Stickmaschine auf Textilien, für Vereinswappen, Firmenlogos und Namen.",
+      "stichworte": "Textilien, Wappen, Firmenlogos",
+      "bild": "",
+      "bild_beschreibung": ""
+    },
+    {
+      "name": "Druck und Plott",
+      "text": "Farbig bedruckt oder mit Folie beplottet, vom Einzelstück bis zur kleinen Serie für Vereine.",
+      "stichworte": "Tassen, Taschen, Kleidung",
+      "bild": "/images/filztasche.jpg",
+      "bild_beschreibung": "Mit Folie beplottete Filztasche mit dem Spruch Das Leben ist eine Wundertüte"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "produkte": [
+    {
+      "name": "Schullineal",
+      "beschreibung": "Holz, graviert",
+      "preis": "",
+      "bild": "/images/lineal.jpg",
+      "bild_beschreibung": "Gravierte Holzlineale mit der Aufschrift Schulkind",
+      "etsy_link": ""
+    },
+    {
+      "name": "Keramikdose",
+      "beschreibung": "Mit Tiermotiv, bedruckt",
+      "preis": "",
+      "bild": "/images/keramikdose.jpg",
+      "bild_beschreibung": "Bedruckte Keramikdosen, eine mit Tiermotiv",
+      "etsy_link": ""
+    },
+    {
+      "name": "Türschild",
+      "beschreibung": "Holz, mit Namen",
+      "preis": "",
+      "bild": "/images/tuerschild.jpg",
+      "bild_beschreibung": "Graviertes Türschild aus Holz mit zwei Pferdeköpfen",
+      "etsy_link": ""
+    },
+    {
+      "name": "Handtuch",
+      "beschreibung": "Gestickt mit Namen",
+      "preis": "",
+      "bild": "",
+      "bild_beschreibung": "",
+      "etsy_link": ""
+    }
+  ]
+}

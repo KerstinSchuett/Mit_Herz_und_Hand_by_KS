@@ -1,0 +1,82 @@
+{
+  "hero": {
+    "vorzeile": "Nur bei uns · von der Butjadinger Küste",
+    "titel_leicht": "Die Butjenter",
+    "titel_fett": "Wattmusikanten",
+    "text": "Krabbe, Möwe, Schaf und Kuh. Unsere eigenen Figuren – als Buch, Kalender, Magnet, Button und Weihnachtskugel.",
+    "bild": "/images/magnet.jpg",
+    "bild_beschreibung": "Magnet mit den Butjenter Wattmusikanten: Krabbe, Möwe, Schaf und Kuh übereinander",
+    "knopf_1": "Kollektion ansehen",
+    "knopf_2": "Wunschstück anfragen"
+  },
+  "kollektion": {
+    "vorzeile": "Unsere Figuren",
+    "titel": "Die Wattmusikanten-Kollektion",
+    "text": "Fünf Stücke, eine Familie. Unsere eigenen Figuren von der Butjadinger Küste.",
+    "hinweis_karte": {
+      "titel": "Und der Magnet für den Kühlschrank.",
+      "text": "Alle vier Figuren übereinander, wie die Bremer Stadtmusikanten. Nur mit Wattblick.",
+      "preis": "",
+      "link": ""
+    }
+  },
+  "einzelstuecke": {
+    "vorzeile": "Einzelstücke",
+    "titel": "Persönlich gemacht",
+    "text": "Mit Namen, Datum oder Spruch. Graviert, gestickt, bedruckt oder beplottet."
+  },
+  "werkstatt": {
+    "vorzeile": "Die Werkstatt",
+    "titel": "Was wir machen",
+    "text": "Unsere Handwerke in einer Werkstatt, einzeln oder kombiniert."
+  },
+  "wunschstueck": {
+    "vorzeile": "Für dich, deinen Verein oder deine Firma",
+    "titel_leicht": "Deine Idee.",
+    "titel_fett": "Unser Handwerk.",
+    "bild": "/images/kaeseplatte.jpg",
+    "bild_beschreibung": "Gravierte Käseplatte aus Schiefer",
+    "schritte": [
+      {
+        "titel": "Anfrage",
+        "text": "Schreib uns Text, Motiv, Anzahl und Wunschtermin."
+      },
+      {
+        "titel": "Entwurf und Angebot",
+        "text": "Du bekommst einen Entwurf und ein Angebot."
+      },
+      {
+        "titel": "Freigabe",
+        "text": "Wir starten erst, wenn du zustimmst."
+      },
+      {
+        "titel": "Fertigung und Übergabe",
+        "text": "Abholen in Nordenham oder Versand innerhalb Deutschlands."
+      }
+    ],
+    "knopf": "Wunschstück anfragen"
+  },
+  "laeden": {
+    "vorzeile": "Unser Laden",
+    "titel": "Komm vorbei",
+    "text": "Im Allee Café in Burhave findest du eine wechselnde Auswahl zum Anschauen und Mitnehmen – immer dann, wenn das Café geöffnet hat.",
+    "bild": "/images/schaufenster.jpg",
+    "bild_text": "Blick ins Schaufenster",
+    "liste": [
+      {
+        "ort": "Burhave",
+        "art": "Selbstbedienungsladen im Allee Café",
+        "adresse": "Strandallee 28, 26969 Butjadingen",
+        "oeffnungszeiten": "Geöffnet, wenn das Allee Café geöffnet ist:\nMi–Do 13–17 Uhr\nFr–So 9–12 und 13–17 Uhr\nMo und Di Ruhetag"
+      }
+    ]
+  },
+  "ueber_uns": {
+    "vorzeile": "Über uns",
+    "titel": "Mit Herz.\nUnd mit der Hand.",
+    "text": "",
+    "namen": "Kerstin Schütt",
+    "bild": "",
+    "bild_beschreibung": ""
+  }
+}
