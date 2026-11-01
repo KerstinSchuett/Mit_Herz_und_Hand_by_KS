@@ -1,0 +1,317 @@
+# Bearbeitungsfenster (Pages CMS) für mit Herz & Hand KS
+media:
+  input: images
+  output: /images
+  extensions:
+  - jpg
+  - jpeg
+  - png
+  - webp
+content:
+- name: allgemein
+  label: Allgemein (Kontakt und Links)
+  type: file
+  path: content/allgemein.json
+  format: json
+  fields:
+  - name: firmenname
+    label: Firmenname
+    type: string
+  - name: ort
+    label: Ort
+    type: string
+  - name: email
+    label: E-Mail für Anfragen
+    type: string
+  - name: telefon
+    label: Telefon (optional)
+    type: string
+  - name: etsy_link
+    label: Link zum Etsy-Shop (leer lassen, solange es den Shop noch nicht gibt – dann zeigen alle Knöpfe „Anfragen“)
+    type: string
+  - name: instagram_name
+    label: Instagram-Name (ohne @)
+    type: string
+  - name: versand_hinweis
+    label: Versandhinweis oben
+    type: string
+  - name: footer_text
+    label: Text im Fußbereich
+    type: text
+- name: kollektion
+  label: Wattmusikanten-Kollektion
+  type: file
+  path: content/kollektion.json
+  format: json
+  fields:
+  - name: produkte
+    label: Produkte (die ersten zwei werden groß gezeigt)
+    type: object
+    fields: &id001
+    - name: name
+      label: Name
+      type: string
+    - name: beschreibung
+      label: Kurzbeschreibung
+      type: string
+    - name: preis
+      label: Preis (z. B. ab 4,90 €)
+      type: string
+    - name: bild
+      label: Foto
+      type: image
+    - name: bild_beschreibung
+      label: Was ist auf dem Foto zu sehen?
+      type: string
+    - name: etsy_link
+      label: Link zum Artikel auf Etsy (optional)
+      type: string
+    list: true
+- name: einzelstuecke
+  label: Persönlich gemacht
+  type: file
+  path: content/einzelstuecke.json
+  format: json
+  fields:
+  - name: produkte
+    label: Produkte (am besten 4 oder 8)
+    type: object
+    fields: *id001
+    list: true
+- name: handwerke
+  label: Was wir machen
+  type: file
+  path: content/handwerke.json
+  format: json
+  fields:
+  - name: handwerke
+    label: Handwerke
+    type: object
+    fields:
+    - name: name
+      label: Name
+      type: string
+    - name: text
+      label: Beschreibung
+      type: text
+    - name: stichworte
+      label: Stichworte (mit Komma getrennt)
+      type: string
+    - name: bild
+      label: Foto
+      type: image
+    - name: bild_beschreibung
+      label: Was ist auf dem Foto zu sehen?
+      type: string
+    list: true
+- name: start
+  label: Texte der Startseite
+  type: file
+  path: content/start.json
+  format: json
+  fields:
+  - name: hero
+    label: Ganz oben
+    type: object
+    fields:
+    - name: vorzeile
+      label: Kleine Zeile über dem Titel
+      type: string
+    - name: titel_leicht
+      label: Titel Zeile 1 (dünn)
+      type: string
+    - name: titel_fett
+      label: Titel Zeile 2 (fett)
+      type: string
+    - name: text
+      label: Text
+      type: text
+    - name: bild
+      label: Foto
+      type: image
+    - name: bild_beschreibung
+      label: Was ist auf dem Foto zu sehen?
+      type: string
+    - name: knopf_1
+      label: Text Knopf 1
+      type: string
+    - name: knopf_2
+      label: Text Knopf 2
+      type: string
+  - name: kollektion
+    label: 'Kollektion: Überschrift'
+    type: object
+    fields:
+    - name: vorzeile
+      label: Kleine Zeile
+      type: string
+    - name: titel
+      label: Überschrift
+      type: string
+    - name: text
+      label: Text
+      type: text
+    - name: hinweis_karte
+      label: Dunkle Karte (Magnet)
+      type: object
+      fields:
+      - name: titel
+        label: Titel
+        type: string
+      - name: text
+        label: Text
+        type: text
+      - name: preis
+        label: Preis
+        type: string
+      - name: link
+        label: Link (leer = Etsy-Shop)
+        type: string
+  - name: einzelstuecke
+    label: 'Persönlich gemacht: Überschrift'
+    type: object
+    fields:
+    - name: vorzeile
+      label: Kleine Zeile
+      type: string
+    - name: titel
+      label: Überschrift
+      type: string
+    - name: text
+      label: Text
+      type: text
+  - name: werkstatt
+    label: 'Was wir machen: Überschrift'
+    type: object
+    fields:
+    - name: vorzeile
+      label: Kleine Zeile
+      type: string
+    - name: titel
+      label: Überschrift
+      type: string
+    - name: text
+      label: Text
+      type: text
+  - name: wunschstueck
+    label: Wunschstück
+    type: object
+    fields:
+    - name: vorzeile
+      label: Kleine Zeile
+      type: string
+    - name: titel_leicht
+      label: Titel Zeile 1 (dünn)
+      type: string
+    - name: titel_fett
+      label: Titel Zeile 2 (fett)
+      type: string
+    - name: bild
+      label: Foto
+      type: image
+    - name: bild_beschreibung
+      label: Was ist auf dem Foto zu sehen?
+      type: string
+    - name: schritte
+      label: Schritte
+      type: object
+      fields:
+      - name: titel
+        label: Titel
+        type: string
+      - name: text
+        label: Text
+        type: string
+      list: true
+    - name: knopf
+      label: Text auf dem Knopf
+      type: string
+  - name: laeden
+    label: Läden
+    type: object
+    fields:
+    - name: vorzeile
+      label: Kleine Zeile
+      type: string
+    - name: titel
+      label: Überschrift
+      type: string
+    - name: text
+      label: Text
+      type: text
+    - name: bild
+      label: Foto
+      type: image
+    - name: bild_text
+      label: Kleine Beschriftung im Foto
+      type: string
+    - name: liste
+      label: Läden
+      type: object
+      fields:
+      - name: ort
+        label: Ort
+        type: string
+      - name: art
+        label: Art des Ladens
+        type: string
+      - name: adresse
+        label: Straße und Hausnummer
+        type: string
+      - name: oeffnungszeiten
+        label: Öffnungszeiten (je Zeile ein Tag, z. B. Mo–Fr 9–18 Uhr)
+        type: text
+      list: true
+  - name: ueber_uns
+    label: Über uns
+    type: object
+    fields:
+    - name: vorzeile
+      label: Kleine Zeile
+      type: string
+    - name: titel
+      label: Überschrift (Zeilenumbruch erlaubt)
+      type: text
+    - name: text
+      label: Eure Geschichte
+      type: text
+    - name: namen
+      label: Eure Namen
+      type: string
+    - name: bild
+      label: Werkstattfoto
+      type: image
+    - name: bild_beschreibung
+      label: Was ist auf dem Foto zu sehen?
+      type: string
+- name: rechtliches
+  label: Impressum und Datenschutz
+  type: file
+  path: content/rechtliches.json
+  format: json
+  fields:
+  - name: impressum
+    label: Impressum
+    type: object
+    fields:
+    - name: name
+      label: 'Name(n) – bei zwei Inhabern: GbR-Name und beide Namen, je eine Zeile'
+      type: text
+    - name: strasse
+      label: Straße und Hausnummer
+      type: string
+    - name: plz_ort
+      label: PLZ und Ort
+      type: string
+    - name: email
+      label: E-Mail
+      type: string
+    - name: telefon
+      label: Telefon (optional)
+      type: string
+    - name: zusatz
+      label: Hinweis Umsatzsteuer
+      type: text
+  - name: datenschutz
+    label: Datenschutzerklärung (Absätze mit Leerzeile trennen; eine Zeile mit „## “ davor wird Zwischenüberschrift)
+    type: text
