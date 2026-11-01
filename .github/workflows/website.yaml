@@ -1,0 +1,48 @@
+name: Website veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bildverkleinerung installieren
+        run: pip install pillow
+      - name: Website bauen
+        run: python build.py
+      - name: Schrift Figtree lokal einbinden (keine Google-Verbindung für Besucher)
+        run: |
+          mkdir -p _site/assets/fonts
+          curl -fsSL -o _site/assets/fonts/figtree.woff2 \
+            "https://cdn.jsdelivr.net/npm/@fontsource-variable/figtree@5.1.1/files/figtree-latin-wght-normal.woff2" \
+            || echo "Schrift nicht geladen – Ersatzschrift wird genutzt"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  veroeffentlichen:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
