@@ -1,36 +1,40 @@
 {
   "produkte": [
     {
-      "name": "Weihnachtskugeln",
-      "beschreibung": "Weiß oder mit Wintermotiv",
-      "preis": "",
-      "bild": "/images/weihnachtskugeln.jpg",
-      "bild_beschreibung": "Zwei Weihnachtskugeln mit den Wattmusikanten",
-      "etsy_link": ""
+      "name": "Weihnachtsornamente ",
+      "beschreibung": "Weihnachtsornamente mit den Butjenter Wattmusikanten ",
+      "preis": "4,50 €",
+      "bild": "/images/Bildschirmfoto 2026-11-02 um 12.42.25.png",
+      "bild_beschreibung": "Weihnachtsornamente mit den Wattmusikanten"
     },
     {
       "name": "Button",
       "beschreibung": "Zum Anstecken",
-      "preis": "",
+      "preis": "3,50 €",
       "bild": "/images/button.jpg",
-      "bild_beschreibung": "Button „Die Butjenter Wattmusikanten“ am Strand",
-      "etsy_link": ""
+      "bild_beschreibung": "Button „Die Butjenter Wattmusikanten“ am Strand"
     },
     {
       "name": "Buch",
-      "beschreibung": "Die ganze Geschichte",
-      "preis": "",
-      "bild": "",
-      "bild_beschreibung": "",
-      "etsy_link": ""
+      "beschreibung": "„Die Wattmusikanten – Ein schaurig-schönes Abenteuer am Meer“ In einer bunten Welt aus Muscheln, Watt und Wind erleben vier mutige Tiere ein musikalisches Abenteuer: 🐮Kuh, 🐑Schaf, 🐦Möwe und 🦀Krabbe – gemeinsam sind sie die Wattmusikanten!  Sie bauen einen Stall am Deich, errichten eine Wattbühne, spielen Musik im Nebel, erkunden ein verlassenes Piratenschiff und finden schließlich eine geheimnisvolle Schatztruhe voller Gold, bunter Perlen und silberner Muschelblumen. Bei Vollmond bringen sie das Watt zum Klingen – sogar die Piraten geraten in Panik!  Ob am Café aus Muscheln, auf der Bühne oder auf Schatzsuche: Musik, Freundschaft und Mut begleiten sie auf jedem Schritt.",
+      "preis": "12,80 €",
+      "bild": "/images/Homepagebild erstellen.png",
+      "bild_beschreibung": "Das Buch Die Butjenter Wattmusikanten"
     },
     {
       "name": "Kalender",
-      "beschreibung": "Zwölf Monate Watt",
-      "preis": "",
-      "bild": "",
-      "bild_beschreibung": "",
-      "etsy_link": ""
-    }
+      "beschreibung": "Zwölf Monate mit den Butjenter Wattmusikanten",
+      "preis": "16,80 €",
+      "bild": "/images/Verkaufsbild Kalender 2027-1.png",
+      "bild_beschreibung": "Kalender 2027 Butjenter Wattmusikanten"
+    },
+    {
+      "name": "Magnet Butjenter Wattmusikanten",
+      "beschreibung": "Magnet für viele Oberflächen mit dem Motiv der Butjenter Wattmusikanten",
+      "preis": "3,50 €",
+      "bild": "/images/Homepagebild erstellen 2.png",
+      "bild_beschreibung": "Magnet Butjenter Wattmusikanten"
+    },
+    {}
   ]
 }
