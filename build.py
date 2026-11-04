@@ -55,6 +55,64 @@ def pruefe(wert, was):
         FEHLT.append(was)
     return wert
 
+# ---------- Shop ----------
+def preis_cent(s):
+    """'12,90 €' → 1290. 'ab 4,90' oder leer → None (nicht bestellbar, nur Anzeige)."""
+    t = str(s or "").strip().lower()
+    if not t or t.startswith("ab") or " ab " in t: return None
+    m = re.search(r"\d[\d.,]*", t)
+    if not m: return None
+    z = m.group(0)
+    if "," in z:                      # 1.290,50 → Punkt ist Tausender
+        ganz, _, rest = z.partition(","); ganz = ganz.replace(".", "")
+    elif z.count(".") == 1 and len(z.split(".")[1]) <= 2:   # 12.90 → Punkt ist Komma
+        ganz, rest = z.split(".")
+    else:                             # 1.290 → Tausender
+        ganz, rest = z.replace(".", ""), ""
+    if not ganz.isdigit(): return None
+    return int(ganz) * 100 + int((rest or "0")[:2].ljust(2, "0"))
+
+def euro(cent):
+    return f"{cent // 100},{cent % 100:02d} €"
+
+def slug(t):
+    t = str(t or "").lower()
+    for a, b in [("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")]: t = t.replace(a, b)
+    t = re.sub(r"[^a-z0-9]+", "-", t).strip("-")
+    return t or "artikel"
+
+def wahr(x, standard=False):
+    if isinstance(x, bool): return x
+    if x in (None, ""): return standard
+    return str(x).strip().lower() in ("1", "true", "ja", "yes", "on")
+
+def shop_einstellungen(a):
+    sh = obj(a.get("shop"))
+    return D({
+        "aktiv": wahr(sh.get("aktiv"), False),
+        "schluessel": (sh.get("schluessel") or "").strip(),
+        "pauschale": preis_cent(sh.get("versand_pauschale")) if str(sh.get("versand_pauschale") or "").strip() else 490,
+        "frei_ab": preis_cent(sh.get("versandfrei_ab")) if str(sh.get("versandfrei_ab") or "").strip() else None,
+        "lieferzeit": (sh.get("lieferzeit") or "3–5 Werktage nach Zahlungseingang").strip(),
+        "lieferzeit_wunsch": (sh.get("lieferzeit_wunsch") or "5–10 Werktage nach Zahlungseingang").strip(),
+        "abholung": (sh.get("abholung_text") or "Abholung im Allee Café in Burhave oder nach Absprache in Nordenham").strip(),
+        "zahlung": (sh.get("zahlung_text") or "Vorkasse per Überweisung oder PayPal – die Rechnung mit allen Angaben kommt per E-Mail.").strip(),
+    })
+
+PRODUKTE = []   # alle bestellbaren Artikel, für das eingebettete Shop-JSON
+def produkt_daten(p, bereich, id_vorgabe=None):
+    pid = id_vorgabe or f"{slug(bereich)[:1]}-{slug(p.get('name'))}"
+    n = 2
+    while any(x["id"] == pid for x in PRODUKTE): pid = f"{pid}-{n}"; n += 1
+    cent = preis_cent(p.get("preis"))
+    d = {"id": pid, "name": str(p.get("name") or ""), "beschreibung": str(p.get("beschreibung") or ""),
+         "text": str(p.get("beschreibung_lang") or ""), "preis": cent, "preis_text": str(p.get("preis") or ""),
+         "bild": bildpfad(p.get("bild")), "alt": str(p.get("bild_beschreibung") or ""),
+         "wunschtext": wahr(p.get("wunschtext")), "wunschtext_hinweis": str(p.get("wunschtext_hinweis") or ""),
+         "verfuegbar": wahr(p.get("verfuegbar"), True), "bereich": bereich}
+    PRODUKTE.append(d)
+    return d
+
 # ---------- Logo ----------
 HERZ = ("M0 93 C5 97.5 10 97.5 15 93 C20 88.5 25 88.5 30 93 C37 99.3 46 88.8 50 86 C70 72 90 58 90 38 C90 24 80 15 68 15 "
         "C59 15 53 20 50 27 C47 20 41 15 32 15 C20 15 10 24 10 38 C10 56 28 70 44 81")
@@ -83,14 +141,28 @@ def bild(p, alt, extra=""):
         return f'<div class="platzhalter" {extra}>Foto folgt</div>'
     return f'<img src="{e(p)}" alt="{e(alt)}" loading="lazy" decoding="async" {extra}>'
 
-def produktkarte(p, hell=False, bereich=""):
+def produktkarte(p, hell=False, bereich="", shop=None):
     pruefe(p.get("bild"), f"{bereich}: Foto für „{p.get('name')}“")
     pruefe(p.get("preis"), f"{bereich}: Preis für „{p.get('name')}“")
     link = (p.get("etsy_link") or "").strip()
-    preis = f'<div class="preis">{e(p["preis"])}</div>' if (p.get("preis") or "").strip() else ""
-    name = f'<a class="karte-link" href="{e(link)}" target="_blank" rel="noopener">{e(p.get("name"))}</a>' if link else e(p.get("name"))
-    return (f'<article class="karte{" karte-hell" if hell else ""}"><div class="bild">{bild(p.get("bild"), p.get("bild_beschreibung"))}</div>'
+    d = produkt_daten(p, bereich)
+    pt = str(p.get("preis") or "").strip()
+    if pt and "€" not in pt: pt += " €"
+    preis = (f'<div class="preis">{euro(d["preis"])}</div>' if d["preis"] is not None else (f'<div class="preis">{e(pt)}</div>' if pt else ""))
+    bestellbar = bool(shop and shop["aktiv"] and d["preis"] is not None)
+    if bestellbar:
+        name = f'<a class="karte-link" href="warenkorb.html#artikel/{e(d["id"])}" data-artikel="{e(d["id"])}">{e(p.get("name"))}</a>'
+    elif link:
+        name = f'<a class="karte-link" href="{e(link)}" target="_blank" rel="noopener">{e(p.get("name"))}</a>'
+    else:
+        name = e(p.get("name"))
+    marke = '<span class="marke-aus">Ausverkauft</span>' if bestellbar and not d["verfuegbar"] else ""
+    return (f'<article class="karte{" karte-hell" if hell else ""}{" bestellbar" if bestellbar else ""}"><div class="bild">{bild(p.get("bild"), p.get("bild_beschreibung"))}{marke}</div>'
             f'<div class="unterzeile"><div><div class="name">{name}</div><div class="beschr">{e(p.get("beschreibung"))}</div></div>{preis}</div></article>')
+
+def preishinweis(shop):
+    if not (shop and shop["aktiv"]): return ""
+    return '<p class="preishinweis">Alle Preise sind Endpreise, keine Umsatzsteuer gemäß § 19 UStG, zzgl. <a href="versand.html">Versand</a> – Abholung kostenlos.</p>'
 
 def kopf(v, titel, text, rechts=""):
     t = f'<p class="einleitung">{e(text)}</p>' if text else ""
@@ -99,9 +171,11 @@ def kopf(v, titel, text, rechts=""):
 def baue_start():
     a = lade("allgemein.json"); s = lade("start.json"); k = lade("kollektion.json")
     ez = lade("einzelstuecke.json"); hw = lade("handwerke.json")
-    etsy = (a.get("etsy_link") or "").strip()          # leer = noch kein Shop: alle Shop-Knöpfe werden zu „Anfragen“
+    etsy = (a.get("etsy_link") or "").strip()          # leer = kein Etsy: Knöpfe zeigen „Anfragen“ bzw. den eigenen Shop
+    shop = shop_einstellungen(a)
+    if shop["aktiv"] and not shop["schluessel"]: FEHLT.append("Shop: Bestell-Schlüssel (Web3Forms) fehlt – Bestellungen gehen bis dahin als E-Mail-Entwurf raus")
     mail = (a.get("email") or "").strip(); pruefe(mail, "Allgemein: E-Mail-Adresse")
-    anfrage = f"mailto:{mail}?subject={quote('Wunschstück-Anfrage')}" if mail else "#wunschstueck"
+    anfrage = "anfrage.html"
     insta = (a.get("instagram_name") or "").strip().lstrip("@")
 
     h = obj(s.get("hero"))
@@ -116,28 +190,39 @@ def baue_start():
 <noscript>{bild(h.get("bild"), h.get("bild_beschreibung"))}</noscript></div></div></div></section>'''
 
     ko = obj(s.get("kollektion")); pr = liste(k.get("produkte"))
-    oben = "".join(produktkarte(p, bereich="Kollektion") for p in pr[:2])
-    rest = "".join(produktkarte(p, bereich="Kollektion") for p in pr[2:4])
-    mehr = "".join(produktkarte(p, bereich="Kollektion") for p in pr[4:])
+    oben = "".join(produktkarte(p, bereich="Kollektion", shop=shop) for p in pr[:2])
+    rest = "".join(produktkarte(p, bereich="Kollektion", shop=shop) for p in pr[2:4])
+    mehr = "".join(produktkarte(p, bereich="Kollektion", shop=shop) for p in pr[4:])
     hk = obj(ko.get("hinweis_karte"))
-    hk_preis = f'<span class="preis" style="color:#FBF8F2">{e(hk["preis"])}</span>' if (hk.get("preis") or "").strip() else ""
+    magnet = produkt_daten(D({"name": hk.get("artikelname") or "Wattmusikanten-Magnet", "beschreibung": hk.get("text"), "beschreibung_lang": hk.get("beschreibung_lang"),
+                              "preis": hk.get("preis"), "bild": hk.get("bild") or s.get("hero", D()).get("bild"), "bild_beschreibung": hk.get("bild_beschreibung") or s.get("hero", D()).get("bild_beschreibung"),
+                              "verfuegbar": hk.get("verfuegbar")}), "Kollektion", "k-magnet")
+    hk_preis = (f'<span class="preis" style="color:#FBF8F2">{euro(magnet["preis"])}</span>' if magnet["preis"] is not None else
+                (f'<span class="preis" style="color:#FBF8F2">{e(hk["preis"])}</span>' if (hk.get("preis") or "").strip() else ""))
+    if shop["aktiv"] and magnet["preis"] is not None:
+        hk_knopf = f'<a class="knopf knopf-sand" href="warenkorb.html#artikel/k-magnet" data-artikel="k-magnet">{"In den Warenkorb" if magnet["verfuegbar"] else "Ausverkauft"}</a>'
+    elif (hk.get("link") or etsy):
+        hk_knopf = f'<a class="knopf knopf-sand" href="{e(hk.get("link") or etsy)}" target="_blank" rel="noopener">Zum Etsy-Shop</a>'
+    else:
+        hk_knopf = f'<a class="knopf knopf-sand" href="{e(anfrage)}">Anfragen</a>'
     hinweis = (f'<article class="karte hinweis"><div class="herz" aria-hidden="true">{herz(110, "#FBF8F2")}</div><h3 class="h3">{e(hk["titel"])}</h3><p>{e(hk["text"])}</p>'
                f'<div class="figuren">' + "".join(f"<span>{x}</span>" for x in ["Krabbe", "Möwe", "Schaf", "Kuh"]) + "</div>" +
-               (f'<div class="fuss"><a class="knopf knopf-sand" href="{e(hk.get("link") or etsy)}" target="_blank" rel="noopener">Zum Etsy-Shop</a>{hk_preis}</div>' if (hk.get("link") or etsy) else
-                f'<div class="fuss"><a class="knopf knopf-sand" href="{e(anfrage)}">Anfragen</a>{hk_preis}</div>') + '</article>')
-    koll = f'''<section class="wrap abschnitt" id="kollektion">{kopf(ko["vorzeile"], ko["titel"], ko["text"], f'<a class="link" href="{e(etsy)}" target="_blank" rel="noopener">Alle im Etsy-Shop</a>' if etsy else f'<a class="link" href="#laeden">In unserem Laden</a>')}
-<div class="raster kollektion">{oben}<div class="kollektion-rest">{rest}</div>{hinweis}<div class="kollektion-mehr">{mehr}</div></div></section>'''
+               f'<div class="fuss">{hk_knopf}{hk_preis}</div></article>')
+    rechts = (f'<a class="link" href="warenkorb.html">Zum Warenkorb</a>' if shop["aktiv"] else
+              (f'<a class="link" href="{e(etsy)}" target="_blank" rel="noopener">Alle im Etsy-Shop</a>' if etsy else f'<a class="link" href="#laeden">In unserem Laden</a>'))
+    koll = f'''<section class="wrap abschnitt" id="kollektion">{kopf(ko["vorzeile"], ko["titel"], ko["text"], rechts)}
+<div class="raster kollektion">{oben}<div class="kollektion-rest">{rest}</div>{hinweis}<div class="kollektion-mehr">{mehr}</div></div>{preishinweis(shop)}</section>'''
 
     es = obj(s.get("einzelstuecke"))
     einz = f'''<section class="band" id="persoenlich"><div class="wrap">{kopf(es["vorzeile"], es["titel"], es["text"])}
-<div class="raster einzelstuecke">{"".join(produktkarte(p, hell=True, bereich="Persönlich gemacht") for p in liste(ez.get("produkte")))}</div></div></section>'''
+<div class="raster einzelstuecke">{"".join(produktkarte(p, hell=True, bereich="Persönlich gemacht", shop=shop) for p in liste(ez.get("produkte")))}</div>{preishinweis(shop)}</div></section>'''
 
     ws = obj(s.get("werkstatt")); zeilen = ""
     for i, x in enumerate(liste(hw.get("handwerke")), 1):
         pruefe(x.get("bild"), f"Werkstatt: Foto für „{x.get('name')}“")
         stich = "".join(f'<span class="pille">{e(t.strip())}</span>' for t in (x.get("stichworte") or "").split(",") if t.strip())
         zeilen += (f'<div class="raster handwerk"><div class="nr">{i:02d}</div><div class="inhalt"><h3 class="h3">{e(x.get("name"))}</h3><p class="text">{e(x.get("text"))}</p>'
-                   f'<div class="stichworte">{stich}<a class="link" href="{e(anfrage)}">{e(x.get("name"))} anfragen</a></div></div>'
+                   f'<div class="stichworte">{stich}<a class="link" href="anfrage.html?thema={quote(str(x.get("name") or ""))}">{e(x.get("name"))} anfragen</a></div></div>'
                    f'<div class="bild">{bild(x.get("bild"), x.get("bild_beschreibung"))}</div></div>')
     werk = f'''<section class="wrap abschnitt" id="werkstatt"><div class="raster kopf-geteilt"><div><div class="vorzeile">{e(ws["vorzeile"])}</div><h2 class="h2">{e(ws["titel"])}</h2></div><p class="einleitung">{e(ws["text"])}</p></div>{zeilen}</section>'''
 
@@ -177,10 +262,21 @@ def seite(titel, inhalt, a, beschreibung=""):
     etsy = (a.get("etsy_link") or "").strip(); mail = (a.get("email") or "").strip()
     insta = (a.get("instagram_name") or "").strip().lstrip("@")
     tel = (a.get("telefon") or "").strip()
-    anfrage = f"mailto:{mail}?subject={quote('Wunschstück-Anfrage')}" if mail else "index.html#wunschstueck"
-    shop_knopf = (f'<a class="knopf knopf-voll knopf-klein" href="{e(etsy)}" target="_blank" rel="noopener">Etsy-Shop</a>' if etsy
-                  else f'<a class="knopf knopf-voll knopf-klein" href="{e(anfrage)}">Anfragen</a>')
-    shop_fuss = f'<a href="{e(etsy)}" target="_blank" rel="noopener">Etsy-Shop</a>' if etsy else '<a href="index.html#laeden">Unser Laden</a>'
+    anfrage = "anfrage.html"
+    shop = shop_einstellungen(a)
+    if shop["aktiv"]:
+        shop_knopf = ('<a class="knopf knopf-voll knopf-klein warenkorb-knopf" href="warenkorb.html" aria-label="Warenkorb">'
+                      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>'
+                      '<span>Warenkorb</span><span class="zahl" data-warenkorb-zahl hidden>0</span></a>')
+        shop_fuss = '<a href="warenkorb.html">Warenkorb</a><a href="versand.html">Versand &amp; Zahlung</a>'
+    else:
+        shop_knopf = (f'<a class="knopf knopf-voll knopf-klein" href="{e(etsy)}" target="_blank" rel="noopener">Etsy-Shop</a>' if etsy
+                      else f'<a class="knopf knopf-voll knopf-klein" href="{e(anfrage)}">Anfragen</a>')
+        shop_fuss = f'<a href="{e(etsy)}" target="_blank" rel="noopener">Etsy-Shop</a>' if etsy else '<a href="index.html#laeden">Unser Laden</a>'
+    recht_links = '<a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a>' + ('<a href="widerruf.html">Widerruf</a><a href="agb.html">AGB</a>' if shop["aktiv"] else "")
+    shop_json = json.dumps({"aktiv": shop["aktiv"], "schluessel": shop["schluessel"], "pauschale": shop["pauschale"], "frei_ab": shop["frei_ab"],
+                            "lieferzeit": shop["lieferzeit"], "lieferzeit_wunsch": shop["lieferzeit_wunsch"], "abholung": shop["abholung"], "zahlung": shop["zahlung"], "email": mail,
+                            "firma": a.get("firmenname") or "mit Herz & Hand KS", "artikel": PRODUKTE}, ensure_ascii=False).replace("</", "<\\/")
     kontakt = ([f'<a href="{e(anfrage)}">Wunschstück anfragen</a>'] + ([f'<span style="user-select:all">{e(mail)}</span>'] if mail else [])
                + ([f'<span style="user-select:all">{e(tel)}</span>'] if tel else [])
                + ([f'<a href="https://www.instagram.com/{e(insta)}/" target="_blank" rel="noopener">Instagram</a>'] if insta else []))
@@ -206,11 +302,13 @@ def seite(titel, inhalt, a, beschreibung=""):
 <div><a class="marke" href="index.html">{herz(42)}<span><span>mit</span> Herz &amp; Hand KS</span></a><p class="text">{e(a.get("footer_text"))}</p></div>
 <div class="fuss-liste"><div class="vorzeile">Shop</div><a href="index.html#kollektion">Wattmusikanten</a><a href="index.html#persoenlich">Persönlich gemacht</a>{shop_fuss}</div>
 <div class="fuss-liste"><div class="vorzeile">Kontakt</div>{"".join(kontakt)}</div></div>
-<div class="fuss-zeile"><span>© {name} · {e(a.get("ort"))}</span><nav aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></nav></div>
+<div class="fuss-zeile"><span>© {name} · {e(a.get("ort"))}</span><nav aria-label="Rechtliches">{recht_links}</nav></div>
 <svg class="wortmarke" viewBox="0 0 1280 118" aria-hidden="true"><text x="-9" y="150" textLength="1298" lengthAdjust="spacingAndGlyphs" font-family="Figtree, Inter, sans-serif" font-weight="800" font-size="196" fill="#1E3A4C" fill-opacity=".07">mit Herz &amp; Hand</text></svg></div>
 <div class="figur figur-kuh hoch" aria-hidden="true"><img src="assets/fig/kuh.png" alt="" width="420" height="286" loading="lazy"></div></footer>
+<script type="application/json" id="shop-daten">{shop_json}</script>
 <script src="assets/main.js" defer></script>
 <script src="assets/turm.js" defer></script>
+<script src="assets/shop.js" defer></script>
 </body>
 </html>
 '''
@@ -224,9 +322,46 @@ def baue_recht(a):
     imp = (f'<section class="wrap recht"><h1 class="h2">Impressum</h1><h2>Angaben gemäß § 5 DDG</h2><p>{zeilen}</p>'
            f'<h2>Kontakt</h2><p>{kontakt}</p>' + (f'<h2>Umsatzsteuer</h2><p>{e(i["zusatz"])}</p>' if i.get("zusatz") else "") + '</section>')
     ds = (r.get("datenschutz") or "").strip(); pruefe(ds, "Datenschutzerklärung")
+    return imp, textseite("Datenschutz", ds, "Die Datenschutzerklärung wird gerade erstellt."), r
+
+def textseite(titel, text, leer="Dieser Text wird gerade erstellt."):
     # Absätze durch Leerzeile; eine Zeile, die mit "## " beginnt, wird Zwischenüberschrift
-    dsh = "".join((f"<h2>{e(p[3:].strip())}</h2>" if p.startswith("## ") else f"<p>{e(p)}</p>") for p in ds.split("\n\n")) if ds else "<p>Die Datenschutzerklärung wird gerade erstellt.</p>"
-    return imp, f'<section class="wrap recht"><h1 class="h2">Datenschutz</h1>{dsh}</section>'
+    text = (text or "").strip()
+    inner = "".join((f"<h2>{e(p[3:].strip())}</h2>" if p.startswith("## ") else f"<p>{e(p)}</p>") for p in text.split("\n\n")) if text else f"<p>{e(leer)}</p>"
+    return f'<section class="wrap recht"><h1 class="h2">{e(titel)}</h1>{inner}</section>'
+
+def versandtext(t, shop):
+    """Beträge aus den Shop-Einstellungen in den Text einsetzen, damit nichts doppelt gepflegt wird."""
+    frei = f"ab einem Bestellwert von {euro(shop['frei_ab'])} liefern wir versandkostenfrei" if shop["frei_ab"] is not None else "eine Versandkostenfreigrenze gibt es derzeit nicht"
+    for k, v in {"{pauschale}": euro(shop["pauschale"]), "{frei_ab}": frei, "{lieferzeit}": shop["lieferzeit"], "{lieferzeit_wunsch}": shop["lieferzeit_wunsch"], "{abholung}": shop["abholung"]}.items():
+        t = (t or "").replace(k, v)
+    return t
+
+def baue_anfrage(mail):
+    return '''<section class="wrap recht anfrage-seite"><div class="vorzeile">Wunschstück</div><h1 class="h2">Erzähl uns deine Idee</h1>
+<p class="einleitung">Gravur, Stickerei, Druck oder Plott – schreib uns, was du dir vorstellst. Wir melden uns mit einem Vorschlag und einem Preis.</p>
+<form class="anfrageformular" data-anfrage novalidate>
+<div class="felder">
+<label class="feld"><span>Vorname und Name</span><input name="name" autocomplete="name" required></label>
+<label class="feld"><span>E-Mail</span><input name="email" type="email" autocomplete="email" required></label>
+<label class="feld"><span>Telefon (optional)</span><input name="telefon" type="tel" autocomplete="tel"></label>
+<label class="feld"><span>Worum geht es?</span><input name="thema" placeholder="z. B. Gravur auf Schneidebrett"></label>
+<label class="feld breit"><span>Deine Idee</span><textarea name="nachricht" rows="6" required placeholder="Was soll es werden, für wen, bis wann? Maße, Text, Stückzahl – alles, was du schon weißt."></textarea></label>
+<input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+</div>
+<label class="haken"><input type="checkbox" name="recht" required><span>Ich bin einverstanden, dass meine Angaben zur Beantwortung der Anfrage gespeichert werden (<a href="datenschutz.html" target="_blank">Datenschutz</a>).</span></label>
+<p class="fehler" role="alert" hidden></p>
+<button class="knopf knopf-voll bestellknopf" type="submit">Anfrage senden</button>
+<p class="anfrage-alternativ">Oder direkt per E-Mail an <span style="user-select:all">''' + e(mail) + '''</span></p>
+</form></section>'''
+
+def baue_warenkorb(shop):
+    if not shop["aktiv"]:
+        return textseite("Warenkorb", "Der Online-Shop ist gerade nicht geöffnet. Schreib uns gern eine E-Mail – wir melden uns schnell.")
+    return '''<section class="wrap recht warenkorb-seite" id="warenkorb-seite"><h1 class="h2">Warenkorb</h1>
+<noscript><p>Für den Warenkorb muss JavaScript eingeschaltet sein. Du kannst uns deine Bestellung auch per E-Mail schicken.</p></noscript>
+<div data-warenkorb></div></section>'''
+
 
 def kopiere_bilder():
     ziel = os.path.join(OUT, "images"); os.makedirs(ziel, exist_ok=True)
@@ -269,9 +404,19 @@ def main():
     kopiere_bilder()
     start, a = baue_start()
     if not str(a.get("firmenname") or "").strip(): a["firmenname"] = "mit Herz & Hand KS"
-    imp, ds = baue_recht(a)
+    imp, ds, r = baue_recht(a)
+    shop = shop_einstellungen(a)
+    seiten = [("index.html", a.get("firmenname"), start), ("impressum.html", "Impressum · " + a.get("firmenname"), imp), ("datenschutz.html", "Datenschutz · " + a.get("firmenname"), ds),
+              ("warenkorb.html", "Warenkorb · " + a.get("firmenname"), baue_warenkorb(shop)),
+              ("anfrage.html", "Wunschstück anfragen · " + a.get("firmenname"), baue_anfrage(a.get("email")))]
+    if shop["aktiv"]:
+        for k, t in [("widerruf", "Widerrufsbelehrung"), ("agb", "AGB"), ("versand_zahlung", "Versand und Zahlung")]:
+            pruefe(r.get(k), f"Shop: Text „{t}“")
+        seiten += [("widerruf.html", "Widerrufsbelehrung · " + a.get("firmenname"), textseite("Widerrufsbelehrung", r.get("widerruf"))),
+                   ("agb.html", "AGB · " + a.get("firmenname"), textseite("Allgemeine Geschäftsbedingungen", r.get("agb"))),
+                   ("versand.html", "Versand und Zahlung · " + a.get("firmenname"), textseite("Versand und Zahlung", versandtext(r.get("versand_zahlung"), shop)))]
     beschr = "Gravur, Stickerei, Druck und Plott aus Nordenham – und die Butjenter Wattmusikanten."
-    for datei, titel, inhalt in [("index.html", a.get("firmenname"), start), ("impressum.html", "Impressum · " + a.get("firmenname"), imp), ("datenschutz.html", "Datenschutz · " + a.get("firmenname"), ds)]:
+    for datei, titel, inhalt in seiten:
         with open(os.path.join(OUT, datei), "w", encoding="utf-8") as f:
             f.write(seite(titel, inhalt, a, beschr))
     open(os.path.join(OUT, ".nojekyll"), "w").close()
